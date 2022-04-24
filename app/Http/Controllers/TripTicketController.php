@@ -19,7 +19,7 @@ class TripTicketController extends Controller
      */
     public function index()
     {
-        return response( TripTicketsMassResource::collection( TripTicket::all() ), 200 );
+        return $this->response( 200, TripTicketsMassResource::collection( TripTicket::all() ) );
     }
 
     /**
@@ -41,7 +41,11 @@ class TripTicketController extends Controller
      */
     public function show(TripTicket $tripTicket)
     {
-        return response( new TripTicketResource( $tripTicket ), 200 );
+        if ( ! $tripTicket ) {
+            return $this->response( 404, [], 'Trip Ticket Not Found' );
+        } else {
+            return $this->response( 200, new TripTicketResource( $tripTicket ), 'Found' );
+        }
     }
 
     /**
@@ -53,7 +57,11 @@ class TripTicketController extends Controller
      */
     public function update(Request $request, TripTicket $tripTicket)
     {
-        return $this->saveTripTicket($request, false, $tripTicket);
+        if ( ! $tripTicket ) {
+            return $this->response( 404, [], 'Trip Ticket Not Found' );
+        } else {
+            return $this->saveCar($request, false, $tripTicket);
+        }
     }
 
     /**
@@ -64,11 +72,20 @@ class TripTicketController extends Controller
      */
     public function destroy(TripTicket $tripTicket)
     {
-        if ($tripTicket->meta()) {
-            $tripTicket->meta()->delete();
+        if ( ! $tripTicket ) {
+            return $this->response( 404, [], 'Trip Ticket Not Found' );
+        } else {
+            try {
+                if ($tripTicket->meta()) {
+                    $tripTicket->meta()->delete();
+                }
+                $tripTicket->delete();
+
+                return $this->response( 204, [], 'Successfully deleted' );
+            } catch ( \Exception $e ) {
+                return $this->response( 500, [ 'error' => $e->getMessage() ], 'Error while processing' );
+            }
         }
-        $tripTicket->delete();
-        return response('', 204);
     }
 
     private function saveTripTicket (Request $request, bool $isCreated = true, TripTicket $tripTicket = null) {
@@ -113,13 +130,13 @@ class TripTicketController extends Controller
             $tripTicket->save();
             DB::commit();
 
-            return response(TripTicketResource::collection( TripTicket::all() ), 201);
+            return $this->response( 201, [], 'Successfully processed' );
 
         }  catch (\Exception $e) {
 
             DB::rollBack();
 
-            return response('Sorry, but something went wrong. Try again. ' . $e->getMessage(), 500);
+            return $this->response( 500, [ 'error' => $e->getMessage() ], 'Error while processing' );
 
         }
     }

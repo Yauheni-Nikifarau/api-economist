@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
@@ -17,9 +18,7 @@ class AuthController extends Controller
         $user = User::where('email', $fields['email'])->first();
 
         if (!$user || !Hash::check($fields['password'], $user->password)) {
-            return response([
-                'message' => 'Bad creds'
-            ], 401);
+            return $this->response(401, [], 'Bad Creds');
         }
 
         $token = $user->createToken('economist_token')->plainTextToken;
@@ -29,7 +28,7 @@ class AuthController extends Controller
             'token' => $token
         ];
 
-        return response($response, 201);
+        return $this->response(200, $response, 'Success');
     }
 
     public function register (Request $request) {
@@ -40,21 +39,34 @@ class AuthController extends Controller
             'password' => 'required|string|confirmed'
         ]);
 
-        $user = User::create([
-            'username' => $fields['name'],
-            'email' => $fields['email'],
-            'color' => $fields['color'] ?? '#041287',
-            'password' => Hash::make($fields['password'])
-        ]);
+        try {
+            DB::beginTransaction();
 
-        $token = $user->createToken('economist_token')->plainTextToken;
+            $user = User::create([
+                'username' => $fields['name'],
+                'email' => $fields['email'],
+                'color' => $fields['color'] ?? '#041287',
+                'password' => Hash::make($fields['password'])
+            ]);
 
-        $response = [
-            'user' => $user,
-            'token' => $token
-        ];
+            $token = $user->createToken('economist_token')->plainTextToken;
 
-        return response($response, 201);
+            $response = [
+                'user' => $user,
+                'token' => $token
+            ];
+
+            DB::commit();
+
+            return $this->response(201, $response, 'Success');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            $this->response(500, ['error' => $e->getMessage()], 'Error while processing');
+        }
+
+
     }
 
     public function logout (Request $request) {

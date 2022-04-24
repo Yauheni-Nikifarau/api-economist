@@ -23,15 +23,10 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
 Route::group(['middleware' => ['auth:sanctum']], function () {
-    Route::get('authtest', function () {
-        return response('success');
-    });
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::apiResource('fuel-entries', FuelEntryController::class);
     Route::apiResource('drivers', DriverController::class);
+    Route::apiResource('cars', CarController::class);
+    Route::apiResource('fuellings', FuellingController::class);
+    Route::apiResource('trip-tickets', TripTicketController::class);
 });
-
-Route::apiResource('cars', CarController::class);
-Route::apiResource('fuellings', FuellingController::class);
-Route::apiResource('trip-tickets', TripTicketController::class);
-

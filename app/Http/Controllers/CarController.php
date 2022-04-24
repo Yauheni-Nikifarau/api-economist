@@ -19,7 +19,7 @@ class CarController extends Controller
      */
     public function index()
     {
-        return response( CarResource::collection( Car::all() ), 200 );
+        return $this->response( 200, CarResource::collection( Car::all() ) );
     }
 
     /**
@@ -40,7 +40,12 @@ class CarController extends Controller
      */
     public function show($slug)
     {
-        return response( new CarResource( Car::where('slug', $slug)->first() ), 200 );
+        $car = Car::where('slug', $slug)->first();
+        if ( ! $car ) {
+            return $this->response( 404, [], 'Car Not Found' );
+        } else {
+            return $this->response( 200, new CarResource( $car ), 'Found' );
+        }
     }
 
     /**
@@ -52,7 +57,12 @@ class CarController extends Controller
      */
     public function update(Request $request, $slug)
     {
-        return $this->saveCar($request, false, Car::where('slug', $slug)->first());
+        $car = Car::where('slug', $slug)->first();
+        if ( ! $car ) {
+            return $this->response( 404, [], 'Car Not Found' );
+        } else {
+            return $this->saveCar($request, false, $car);
+        }
     }
 
     /**
@@ -64,9 +74,20 @@ class CarController extends Controller
     public function destroy($slug)
     {
         $car = Car::where('slug', $slug)->first();
-        $car->meta()->delete();
-        $car->delete();
-        return response('', 204);
+        if ( ! $car ) {
+            return $this->response( 404, [], 'Car Not Found' );
+        } else {
+            try {
+                if ($car->meta()) {
+                    $car->meta()->delete();
+                }
+                $car->delete();
+
+                return $this->response( 204, [], 'Successfully deleted' );
+            } catch ( \Exception $e ) {
+                return $this->response( 500, [ 'error' => $e->getMessage() ], 'Error while processing' );
+            }
+        }
     }
 
     private function saveCar (Request $request, bool $isCreated = true, Car $car = null) {
@@ -121,13 +142,13 @@ class CarController extends Controller
 
             DB::commit();
 
-            return response(CarResource::collection( Car::all() ), 201);
+            return $this->response( 201, [], 'Successfully processed' );
 
         }  catch (\Exception $e) {
 
             DB::rollBack();
 
-            return $this->responseError('Sorry, but something went wrong. Try again.', 500);
+            return $this->response( 500, [ 'error' => $e->getMessage() ], 'Error while processing' );
 
         }
     }
