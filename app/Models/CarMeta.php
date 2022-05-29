@@ -2,7 +2,8 @@
 
 namespace App\Models;
 
-class CarMeta extends \Jenssegers\Mongodb\Eloquent\Model {
+class CarMeta extends \Jenssegers\Mongodb\Eloquent\Model
+{
 
     protected $table = 'cars_meta';
     protected $connection = 'mongodb';
@@ -10,6 +11,4 @@ class CarMeta extends \Jenssegers\Mongodb\Eloquent\Model {
         'plates',
         'limits'
     ];
-
-
 }

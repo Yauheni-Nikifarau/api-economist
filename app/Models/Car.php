@@ -9,15 +9,18 @@ class Car extends Model
 {
     use HasFactory;
 
-    public function fuellings () {
+    public function fuellings()
+    {
         return $this->hasMany(Fuelling::class);
     }
 
-    public function tripTickets () {
+    public function tripTickets()
+    {
         return $this->hasMany(TripTicket::class);
     }
 
-    public function meta () {
+    public function meta()
+    {
         return CarMeta::find($this->car_meta_id);
     }
 }

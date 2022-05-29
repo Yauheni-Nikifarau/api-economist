@@ -27,6 +27,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::apiResource('fuel-entries', FuelEntryController::class);
     Route::apiResource('drivers', DriverController::class);
     Route::apiResource('cars', CarController::class);
+    Route::get('cars-full', [CarController::class, 'indexFull']);
     Route::apiResource('fuellings', FuellingController::class);
     Route::apiResource('trip-tickets', TripTicketController::class);
 });

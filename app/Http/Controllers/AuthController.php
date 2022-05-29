@@ -9,33 +9,35 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    public function login (Request $request) {
+    public function login(Request $request)
+    {
         $fields = $request->validate([
-            'email' => 'required|string',
+            'email'    => 'required|string',
             'password' => 'required|string'
         ]);
 
         $user = User::where('email', $fields['email'])->first();
 
-        if (!$user || !Hash::check($fields['password'], $user->password)) {
+        if ( ! $user || ! Hash::check($fields['password'], $user->password)) {
             return $this->response(401, [], 'Bad Creds');
         }
 
         $token = $user->createToken('economist_token')->plainTextToken;
 
         $response = [
-            'user' => $user,
+            'user'  => $user,
             'token' => $token
         ];
 
         return $this->response(200, $response, 'Success');
     }
 
-    public function register (Request $request) {
+    public function register(Request $request)
+    {
         $fields = $request->validate([
-            'name' => 'required|string',
-            'email' => 'required|string|unique:users,email',
-            'color' => 'string',
+            'name'     => 'required|string',
+            'email'    => 'required|string|unique:users,email',
+            'color'    => 'string',
             'password' => 'required|string|confirmed'
         ]);
 
@@ -44,15 +46,15 @@ class AuthController extends Controller
 
             $user = User::create([
                 'username' => $fields['name'],
-                'email' => $fields['email'],
-                'color' => $fields['color'] ?? '#041287',
+                'email'    => $fields['email'],
+                'color'    => $fields['color'] ?? '#041287',
                 'password' => Hash::make($fields['password'])
             ]);
 
             $token = $user->createToken('economist_token')->plainTextToken;
 
             $response = [
-                'user' => $user,
+                'user'  => $user,
                 'token' => $token
             ];
 
@@ -69,7 +71,8 @@ class AuthController extends Controller
 
     }
 
-    public function logout (Request $request) {
+    public function logout(Request $request)
+    {
         auth()->user()->tokens()->delete();
 
         return [
