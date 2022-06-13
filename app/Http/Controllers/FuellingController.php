@@ -16,29 +16,31 @@ class FuellingController extends Controller
      */
     public function index()
     {
-        return response( FuellingResource::collection( Fuelling::all() ), 200 );
+        return $this->response(200, FuellingResource::collection(Fuelling::all()), 'Fuellings List Ready');
     }
 
     /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
+     *
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
-        return $this->save_fuelling($request);
+        return $this->saveFuelling($request);
     }
 
     /**
      * Display the specified resource.
      *
      * @param  \App\Models\Fuelling  $fuelling
+     *
      * @return \Illuminate\Http\Response
      */
     public function show(Fuelling $fuelling)
     {
-        return response( FuellingResource::collection( $fuelling ), 200 );
+        return $this->response(200, new FuellingResource($fuelling), 'Found');
     }
 
     /**
@@ -46,33 +48,40 @@ class FuellingController extends Controller
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  \App\Models\Fuelling  $fuelling
+     *
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, Fuelling $fuelling)
     {
-        return $this->save_fuelling($request, false, $fuelling);
+        return $this->saveFuelling($request, false, $fuelling);
     }
 
     /**
      * Remove the specified resource from storage.
      *
      * @param  \App\Models\Fuelling  $fuelling
+     *
      * @return \Illuminate\Http\Response
      */
     public function destroy(Fuelling $fuelling)
     {
-        $fuelling->delete();
-        return response('', 204);
+        try {
+            $fuelling->delete();
+
+            return $this->response(201, [], 'Successfully deleted');
+        } catch (\Exception $e) {
+            return $this->response(500, ['error' => $e->getMessage()], 'Error while processing');
+        }
     }
 
-    private function save_fuelling (Request $request, bool $isCreated = true, Fuelling $fuelling = null) {
-        $request->validate( [
+    private function saveFuelling(Request $request, bool $isCreated = true, Fuelling $fuelling = null)
+    {
+        $request->validate([
             'driver_id' => 'required|int|exists:App\Models\Driver,id',
             'car_id'    => 'required|int|exists:App\Models\Car,id',
             'fuel_type' => 'required|in:gasoline,gas_oil',
-            'amount' => 'required|int',
-        ] );
-
+            'amount'    => 'required|int',
+        ]);
 
         try {
 
@@ -82,22 +91,21 @@ class FuellingController extends Controller
                 $fuelling = new Fuelling();
             }
             $fuelling->driver_id = $request->input('driver_id');
-            $fuelling->car_id = $request->input('car_id');
+            $fuelling->car_id    = $request->input('car_id');
             $fuelling->fuel_type = $request->input('fuel_type');
-            $fuelling->amount = $request->input('amount');
+            $fuelling->amount    = $request->input('amount');
 
             $fuelling->save();
 
             DB::commit();
 
-            return response(FuellingResource::collection( Fuelling::all() ), 201);
+            return $this->response(201, [], 'Successfully processed');
 
-        }  catch (\Exception $e) {
+        } catch (\Exception $e) {
 
             DB::rollBack();
 
-            return $this->responseError('Sorry, but something went wrong. Try again.', 500);
-
+            return $this->response(500, ['error' => $e->getMessage()], 'Error while processing');
         }
     }
 }

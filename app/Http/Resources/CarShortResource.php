@@ -4,21 +4,22 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class TripTicketResource extends JsonResource
+class CarShortResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
      *
      * @param  \Illuminate\Http\Request  $request
+     *
      * @return array|\Illuminate\Contracts\Support\Arrayable|\JsonSerializable
      */
     public function toArray($request)
     {
         return [
-            'id' => $this->id,
-            'car_id' => $this->car->id,
-            'driver_id' => $this->driver->id,
-            'meta' => $this->meta()
+            'id'        => $this->id,
+            'name'      => $this->name,
+            'slug'      => $this->slug,
+            'fuel_type' => $this->fuel_type
         ];
     }
 }

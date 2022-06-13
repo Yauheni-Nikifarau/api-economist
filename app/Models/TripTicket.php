@@ -10,15 +10,18 @@ class TripTicket extends Model
 {
     use HasFactory;
 
-    public function car () {
+    public function car()
+    {
         return $this->belongsTo(Car::class);
     }
 
-    public function driver () {
+    public function driver()
+    {
         return $this->belongsTo(Driver::class);
     }
 
-    public function meta () {
+    public function meta()
+    {
         return TripTicketMeta::find($this->trip_ticket_meta_id);
     }
 }

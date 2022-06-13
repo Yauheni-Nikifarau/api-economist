@@ -2,24 +2,26 @@
 
 namespace App\Http\Resources;
 
+use Carbon\Carbon;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class CarResource extends JsonResource
+class TripTicketFullResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
      *
      * @param  \Illuminate\Http\Request  $request
+     *
      * @return array|\Illuminate\Contracts\Support\Arrayable|\JsonSerializable
      */
     public function toArray($request)
     {
         return [
-            'id' => $this->id,
-            'name' => $this->name,
-            'slug' => $this->slug,
-            'fuel_type' => $this->fuel_type,
-            'meta' => $this->meta()
+            'id'        => $this->id,
+            'car_id'    => $this->car->id,
+            'driver_id' => $this->driver->id,
+            'date'      => Carbon::parse($this->created_at)->format('Y-m-d'),
+            'meta'      => $this->meta()
         ];
     }
 }
